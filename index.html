@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Comparativa: Taylor, Euler mejorado y Runge-Kutta 2 &middot; Grupo 10</title>
+<meta name="description" content="Comparativa de los metodos de Taylor de grado 2, Euler mejorado y Runge-Kutta de grado 2 (punto medio) para problemas de valor inicial. Grupo 10, Analisis Numerico, UTN FRLP.">
+<meta name="color-scheme" content="light dark">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<a class="skip-link" href="#stage">Ir al contenido</a>
+
+<div id="shell">
+  <!-- The masthead is inserted here by js/app.js, before the rail. -->
+  <nav id="rail" class="rail" aria-label="Capitulos de la exposicion"></nav>
+
+  <main id="stage" class="stage">
+    <section id="chapter-problema" class="chapter" role="tabpanel" aria-labelledby="rail" hidden></section>
+    <section id="chapter-formulas" class="chapter" role="tabpanel" aria-labelledby="rail" hidden></section>
+    <section id="chapter-mesa" class="chapter" role="tabpanel" aria-labelledby="rail" hidden></section>
+    <section id="chapter-ejercicios" class="chapter" role="tabpanel" aria-labelledby="rail" hidden></section>
+    <section id="chapter-criterios" class="chapter" role="tabpanel" aria-labelledby="rail" hidden></section>
+    <section id="chapter-evidencia" class="chapter" role="tabpanel" aria-labelledby="rail" hidden></section>
+    <section id="chapter-conclusion" class="chapter" role="tabpanel" aria-labelledby="rail" hidden></section>
+    <section id="chapter-fuentes" class="chapter" role="tabpanel" aria-labelledby="rail" hidden></section>
+  </main>
+</div>
+
+<!--
+  Classic deferred scripts, in dependency order, sharing one global namespace
+  (window.EDO). Deliberately no ES modules and no network requests for local
+  files: a browser blocks both when the page is opened straight from the
+  filesystem, which is how this site is meant to be presented.
+-->
+<script src="js/config.js" defer></script>
+<script src="js/domain/mathml.js" defer></script>
+<script src="js/domain/format.js" defer></script>
+<script src="js/domain/methods.js" defer></script>
+<script src="js/domain/problems.js" defer></script>
+<script src="js/domain/errors.js" defer></script>
+<script src="js/domain/rounding.js" defer></script>
+<script src="js/domain/slopeField.js" defer></script>
+<script src="js/domain/genericOrdinate.js" defer></script>
+<script src="js/ui/dom.js" defer></script>
+<script src="js/ui/theme.js" defer></script>
+<script src="js/ui/plot.js" defer></script>
+<script src="js/ui/views.js" defer></script>
+<script src="js/ui/mesa.js" defer></script>
+<script src="js/ui/chapters.js" defer></script>
+<script src="js/ui/exercises.js" defer></script>
+<script src="js/ui/evidence.js" defer></script>
+<script src="js/ui/router.js" defer></script>
+<script src="js/app.js" defer></script>
+
+</body>
+</html>

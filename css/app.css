@@ -1,0 +1,1415 @@
+/* ==========================================================================
+   Layout and components.
+
+   The page is an axis: a horizontal chapter rail drawn as a marching x axis,
+   then one content column. Figures live in "plates" with a hairline border
+   and a numbered caption.
+   ========================================================================== */
+
+/* --- Masthead ------------------------------------------------------------ */
+
+.masthead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-5);
+  padding: var(--space-4) var(--space-5) var(--space-3);
+  border-bottom: 1px solid var(--hairline);
+  background: var(--paper);
+}
+
+.masthead__identity {
+  flex: 1 1 22ch;
+  min-width: 0;
+}
+
+.masthead__group {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  font-weight: 500;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.masthead__title {
+  font-family: var(--font-display);
+  font-size: var(--step-0);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+.masthead__controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+/* --- Buttons and switches ------------------------------------------------ */
+
+.btn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0.4em 0.85em;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 2px;
+  background: var(--paper-raised);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+  cursor: pointer;
+}
+
+.btn:hover {
+  border-color: var(--ink);
+}
+
+.btn[aria-pressed='true'] {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn--accent[aria-pressed='true'] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-contrast);
+}
+
+.btn--ghost {
+  background: transparent;
+  border-color: var(--hairline);
+}
+
+/* --- The chapter rail: a marching axis ----------------------------------- */
+
+.rail {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--paper);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.rail__track {
+  position: relative;
+  display: flex;
+  gap: 0;
+  padding: var(--space-3) var(--space-5) var(--space-2);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+}
+
+/* The axis line itself, running under every tick. */
+.rail__track::before {
+  content: '';
+  position: absolute;
+  left: var(--space-5);
+  right: var(--space-5);
+  top: calc(var(--space-3) + 0.7em);
+  border-top: 1px solid var(--hairline-strong);
+  pointer-events: none;
+}
+
+.rail__step {
+  position: relative;
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35em;
+  min-width: 7.5rem;
+  padding: 0 var(--space-3) var(--space-1) 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  text-align: left;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.rail__tick {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 1.4em;
+}
+
+/* The vertical tick mark standing on the axis. */
+.rail__tick::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.7em;
+  width: 1px;
+  height: 0.7em;
+  background: var(--hairline-strong);
+}
+
+.rail__tick::after {
+  content: attr(data-abscissa);
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  transform: translate(-0.1em, 0.15em);
+  font-size: 0.82em;
+  color: var(--muted);
+}
+
+.rail__label {
+  display: block;
+  font-family: var(--font-display);
+  font-size: var(--step--1);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--muted);
+  padding-top: 0.5em;
+}
+
+.rail__step:hover .rail__label {
+  color: var(--ink);
+}
+
+.rail__step[aria-current='true'] .rail__label {
+  color: var(--ink);
+}
+
+.rail__step[aria-current='true'] .rail__tick::before {
+  background: var(--accent);
+  width: 2px;
+  height: 1.1em;
+  top: 0.4em;
+}
+
+.rail__step[aria-current='true'] .rail__tick::after {
+  color: var(--accent);
+  font-weight: 500;
+}
+
+/* --- Stage and chapters -------------------------------------------------- */
+
+.stage {
+  padding: var(--space-6) var(--space-5) var(--space-8);
+  max-width: 78rem;
+  margin: 0 auto;
+}
+
+.chapter[hidden] {
+  display: none;
+}
+
+.chapter__head {
+  margin-bottom: var(--space-6);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.chapter__eyebrow {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: var(--space-3);
+}
+
+.chapter__title {
+  font-size: var(--step-4);
+  font-weight: 900;
+  max-width: 34ch;
+}
+
+.chapter__lede {
+  margin-top: var(--space-4);
+  margin-bottom: 0;
+  font-size: var(--step-1);
+  color: var(--muted);
+  max-width: 54ch;
+}
+
+/* On a wide screen the head reads across the page instead of stacking, which
+   keeps the first figure of each chapter above the fold on a projector. */
+@media (min-width: 64rem) {
+  .chapter__head {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    column-gap: var(--space-7);
+    align-items: end;
+  }
+
+  .chapter__eyebrow {
+    grid-column: 1 / -1;
+  }
+
+  .chapter__lede {
+    margin-top: 0;
+    padding-bottom: 0.35em;
+  }
+}
+
+.block {
+  margin-bottom: var(--space-7);
+}
+
+.block__title {
+  font-size: var(--step-2);
+  margin-bottom: var(--space-4);
+}
+
+.block__sub {
+  font-size: var(--step-1);
+  margin: var(--space-5) 0 var(--space-3);
+}
+
+.note {
+  max-width: var(--measure);
+  padding-left: var(--space-4);
+  border-left: 2px solid var(--hairline-strong);
+  color: var(--muted);
+  font-size: var(--step--1);
+}
+
+.note--source {
+  border-left-color: var(--accent);
+}
+
+/* A claim that must not stay folded away inside a <details>. */
+.callout {
+  max-width: var(--measure);
+  margin: 0 0 var(--space-6);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--hairline);
+  border-left: 3px solid var(--accent);
+  background: var(--accent-wash);
+}
+
+/* --- Plates: every figure sits in one ------------------------------------ */
+
+.plate {
+  margin: 0 0 var(--space-6);
+  border: 1px solid var(--hairline);
+  background: var(--paper-raised);
+}
+
+.plate__body {
+  padding: var(--space-4);
+}
+
+.plate__body--flush {
+  padding: 0;
+}
+
+.plate__caption {
+  display: block;
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--hairline);
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.plate__caption b {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+/* --- Data tables --------------------------------------------------------- */
+
+.tablewrap {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: max-content;
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.5;
+}
+
+caption {
+  caption-side: top;
+  padding: 0 0 var(--space-3);
+  font-family: var(--font-display);
+  font-size: var(--step-0);
+  font-weight: 700;
+  text-align: left;
+}
+
+th,
+td {
+  padding: 0.45em 0.8em;
+  text-align: right;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--hairline);
+}
+
+th:first-child,
+td:first-child {
+  text-align: left;
+}
+
+thead th {
+  position: relative;
+  font-weight: 500;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.86em;
+  border-bottom: 1px solid var(--hairline-strong);
+  vertical-align: bottom;
+}
+
+tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+tbody tr.is-final td {
+  border-top: 1px solid var(--hairline-strong);
+  font-weight: 500;
+}
+
+tbody tr.is-current td {
+  background: var(--accent-wash);
+}
+
+/* A row that is shown for completeness but is not part of the measurement. */
+tbody tr.is-muted th,
+tbody tr.is-muted td {
+  color: var(--muted);
+  font-style: italic;
+}
+
+td.is-exact,
+th.is-exact {
+  color: var(--muted);
+}
+
+/* --- Method identity: colour plus a secondary encoding ------------------- */
+
+.swatch {
+  display: inline-block;
+  width: 1.6em;
+  height: 0;
+  margin-right: 0.45em;
+  vertical-align: 0.3em;
+  border-top-width: 3px;
+  border-top-style: solid;
+}
+
+.swatch--euler { border-top-color: var(--m-euler); border-top-style: solid; }
+.swatch--taylor2 { border-top-color: var(--m-taylor); border-top-style: dashed; }
+.swatch--eulerMejorado { border-top-color: var(--m-mejorado); border-top-style: dotted; }
+.swatch--rk2Midpoint { border-top-color: var(--m-rk2); border-top-style: dashed; }
+.swatch--exact { border-top-color: var(--m-exact); border-top-style: dashed; }
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  margin: 0 0 var(--space-3);
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+}
+
+.legend li {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.3em;
+  white-space: nowrap;
+}
+
+.legend__glyph {
+  flex: 0 0 auto;
+}
+
+/* --- Controls row -------------------------------------------------------- */
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  align-items: flex-end;
+  padding: var(--space-4);
+  margin-bottom: var(--space-5);
+  border: 1px solid var(--hairline);
+  background: var(--paper-sunken);
+}
+
+.control {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.control__label {
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.control__value {
+  font-family: var(--font-mono);
+  font-size: var(--step-0);
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.control--grow {
+  flex: 1 1 16rem;
+}
+
+select,
+input[type='range'] {
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  color: var(--ink);
+  max-width: 100%;
+}
+
+select {
+  appearance: none;
+  padding: 0.4em 2em 0.4em 0.7em;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 2px;
+  background-color: var(--paper-raised);
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: calc(100% - 1.1em) 55%, calc(100% - 0.75em) 55%;
+  background-size: 0.35em 0.35em;
+  background-repeat: no-repeat;
+}
+
+input[type='range'] {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+.toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.switchrow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  color: var(--muted);
+}
+
+.switchrow input[type='checkbox'] {
+  accent-color: var(--accent);
+  width: 1.1em;
+  height: 1.1em;
+}
+
+/* --- The four P.V.I. elements ------------------------------------------- */
+
+.elements {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(13rem, 100%), 1fr));
+  gap: 1px;
+  margin: 0 0 var(--space-5);
+  padding: 0;
+  background: var(--hairline);
+  border: 1px solid var(--hairline);
+  max-width: none;
+}
+
+.elements > div {
+  padding: var(--space-3) var(--space-4);
+  background: var(--paper-raised);
+}
+
+.elements dt {
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: var(--space-1);
+}
+
+.elements dd {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--step-0);
+  font-weight: 500;
+}
+
+/* --- Method fichas (chapter: las cuatro fórmulas) ----------------------- */
+
+/* Two wide columns, not three narrow ones: the Euler mejorado formula is long
+   and must not be clipped when the page is projected. */
+.fichas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(27rem, 100%), 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.ficha {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--hairline);
+  border-top-width: 3px;
+  background: var(--paper-raised);
+  min-width: 0;
+}
+
+.ficha--euler { border-top-color: var(--m-euler); }
+.ficha--taylor2 { border-top-color: var(--m-taylor); }
+.ficha--eulerMejorado { border-top-color: var(--m-mejorado); }
+.ficha--rk2Midpoint { border-top-color: var(--m-rk2); }
+
+.ficha__head {
+  padding: var(--space-3) var(--space-4) var(--space-2);
+}
+
+.ficha__order {
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.ficha__name {
+  font-size: var(--step-1);
+  margin-top: var(--space-1);
+}
+
+.ficha__formula {
+  padding: var(--space-2) var(--space-4);
+  border-top: 1px solid var(--hairline);
+  border-bottom: 1px solid var(--hairline);
+  overflow-x: auto;
+}
+
+.ficha__idea {
+  padding: var(--space-3) var(--space-4);
+  margin: 0;
+  font-size: var(--step--1);
+  color: var(--muted);
+  max-width: none;
+}
+
+.ficha__facts {
+  margin: 0;
+  padding: 0 var(--space-4) var(--space-3);
+  list-style: none;
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+}
+
+.ficha__facts li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0.3em 0;
+  border-bottom: 1px dotted var(--hairline);
+}
+
+.ficha__facts li:last-child {
+  border-bottom: 0;
+}
+
+.ficha__facts dfn,
+.ficha__facts span:first-child {
+  color: var(--muted);
+  font-style: normal;
+}
+
+.ficha__facts b {
+  font-weight: 500;
+  text-align: right;
+}
+
+/* Pinned to the bottom of the card, flush: the card already has its border. */
+.ficha > details.deduccion {
+  margin: auto 0 0;
+  border: 0;
+  border-top: 1px solid var(--hairline);
+  background: none;
+}
+
+/* --- Collapsible derivations -------------------------------------------- */
+
+details.deduccion {
+  border: 1px solid var(--hairline);
+  background: var(--paper-raised);
+  margin-bottom: var(--space-4);
+}
+
+details > summary {
+  padding: var(--space-3) var(--space-4);
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+  cursor: pointer;
+  list-style: none;
+}
+
+details > summary::-webkit-details-marker {
+  display: none;
+}
+
+details > summary::before {
+  content: '+ ';
+  color: var(--accent);
+  font-weight: 500;
+}
+
+details[open] > summary::before {
+  content: '\2212 ';
+}
+
+details > summary:hover {
+  background: var(--accent-wash);
+}
+
+.deduccion__body {
+  padding: 0 var(--space-4) var(--space-4);
+  border-top: 1px dotted var(--hairline);
+}
+
+.deduccion__body > p:first-child {
+  margin-top: var(--space-4);
+}
+
+/* --- Derivation / formula steps, the apunte's own presentation ---------- */
+
+.derivation {
+  margin: 0 0 var(--space-4);
+  max-width: none;
+}
+
+.derivation__step {
+  margin-bottom: var(--space-3);
+}
+
+.derivation__label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  color: var(--muted);
+  margin-bottom: var(--space-1);
+}
+
+.ordinate {
+  padding: var(--space-3) var(--space-4);
+  border-left: 3px solid var(--accent);
+  background: var(--accent-wash);
+  overflow-x: auto;
+}
+
+.ordinate__tag {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: var(--space-1);
+}
+
+/* --- Mesa de integración (the signature) ------------------------------- */
+
+.mesa {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+  gap: var(--space-5);
+  align-items: start;
+}
+
+@media (max-width: 62rem) {
+  .mesa {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.mesa__figure {
+  min-width: 0;
+}
+
+.mesa__panel {
+  min-width: 0;
+  border: 1px solid var(--hairline);
+  background: var(--paper-raised);
+}
+
+.mesa__panel-head {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--hairline);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.mesa__panel-title {
+  font-size: var(--step-1);
+}
+
+.mesa__panel-method {
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  font-weight: 500;
+}
+
+.mesa__panel-body {
+  padding: var(--space-4);
+}
+
+.mesa__panel-body > :last-child {
+  margin-bottom: 0;
+}
+
+.mesa__intermediates {
+  margin: var(--space-3) 0;
+  padding: var(--space-3) 0 0;
+  border-top: 1px dotted var(--hairline);
+  list-style: none;
+  font-size: var(--step--1);
+}
+
+.mesa__intermediates li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-2);
+}
+
+.mesa__intermediates b {
+  flex: 0 0 auto;
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 0.92em;
+  color: var(--muted);
+}
+
+.mesa__result {
+  padding: var(--space-3);
+  border: 1px solid var(--accent);
+  background: var(--accent-wash);
+  overflow-x: auto;
+}
+
+.stepper {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--hairline);
+}
+
+.stepper__readout {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Plot surface -------------------------------------------------------- */
+
+.plot {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: var(--paper-raised);
+}
+
+.plot__axis {
+  stroke: var(--hairline-strong);
+  stroke-width: 1;
+  fill: none;
+}
+
+.plot__grid {
+  stroke: var(--grid);
+  stroke-width: 1;
+  fill: none;
+}
+
+.plot__field {
+  stroke: var(--field-tick);
+  stroke-width: 1;
+  stroke-linecap: round;
+  fill: none;
+}
+
+.plot__label {
+  fill: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.plot__label--axis {
+  fill: var(--ink);
+  font-size: 12px;
+}
+
+.plot__series {
+  fill: none;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.plot__series--exact {
+  stroke: var(--m-exact);
+  stroke-width: 1.5;
+  opacity: 0.75;
+}
+
+.plot__marker {
+  stroke: var(--paper-raised);
+  stroke-width: 2;
+}
+
+.plot__construction {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+
+.plot__construction--ghost {
+  stroke-dasharray: 3 3;
+  opacity: 0.8;
+}
+
+.plot__cursor {
+  fill: var(--accent);
+  stroke: var(--paper-raised);
+  stroke-width: 2;
+}
+
+.plot__direct-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  paint-order: stroke;
+  stroke: var(--paper-raised);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+
+.plot [data-method='euler'] { stroke: var(--m-euler); }
+.plot [data-method='taylor2'] { stroke: var(--m-taylor); }
+.plot [data-method='eulerMejorado'] { stroke: var(--m-mejorado); }
+.plot [data-method='rk2Midpoint'] { stroke: var(--m-rk2); }
+
+.plot circle[data-method='euler'],
+.plot polygon[data-method='euler'],
+.plot rect[data-method='euler'] { fill: var(--m-euler); }
+.plot circle[data-method='taylor2'],
+.plot polygon[data-method='taylor2'],
+.plot rect[data-method='taylor2'] { fill: var(--m-taylor); }
+.plot circle[data-method='eulerMejorado'],
+.plot polygon[data-method='eulerMejorado'],
+.plot rect[data-method='eulerMejorado'] { fill: var(--m-mejorado); }
+.plot circle[data-method='rk2Midpoint'],
+.plot polygon[data-method='rk2Midpoint'],
+.plot rect[data-method='rk2Midpoint'] { fill: var(--m-rk2); }
+
+.plot text[data-method='euler'] { fill: var(--m-euler); stroke: var(--paper-raised); }
+.plot text[data-method='taylor2'] { fill: var(--m-taylor); stroke: var(--paper-raised); }
+.plot text[data-method='eulerMejorado'] { fill: var(--m-mejorado); stroke: var(--paper-raised); }
+.plot text[data-method='rk2Midpoint'] { fill: var(--m-rk2); stroke: var(--paper-raised); }
+
+/* --- Audience interaction cards ----------------------------------------- */
+
+.audience {
+  margin: 0 0 var(--space-6);
+  border: 1px solid var(--accent);
+  background: var(--paper-raised);
+}
+
+.audience__head {
+  padding: var(--space-4) var(--space-4) var(--space-2);
+}
+
+.audience__tag {
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.audience__question {
+  font-size: var(--step-2);
+  margin-top: var(--space-2);
+  max-width: 46ch;
+}
+
+.audience__options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding: 0 var(--space-4) var(--space-4);
+}
+
+.audience__reveal {
+  padding: var(--space-4);
+  border-top: 1px solid var(--accent);
+  background: var(--accent-wash);
+}
+
+.audience__reveal[hidden] {
+  display: none;
+}
+
+.audience__reveal > :last-child {
+  margin-bottom: 0;
+}
+
+/* --- Exercise list ------------------------------------------------------ */
+
+.exercise {
+  margin-bottom: var(--space-6);
+  border: 1px solid var(--hairline);
+  background: var(--paper-raised);
+}
+
+.exercise__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.exercise__head > div {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.exercise__id {
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.exercise__ode {
+  font-size: var(--step-2);
+  margin-top: var(--space-1);
+}
+
+.exercise__assigned {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-1);
+  min-width: 0;
+  max-width: 100%;
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  color: var(--muted);
+  text-align: right;
+}
+
+.exercise__assigned b {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+/* The option labels are long; the control must never widen the page. */
+.exercise__assigned select {
+  max-width: 100%;
+  width: 22rem;
+}
+
+.exercise__body {
+  padding: var(--space-4);
+}
+
+.exercise__body > :last-child {
+  margin-bottom: 0;
+}
+
+.exercise__answer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--hairline);
+  background: var(--paper-sunken);
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+}
+
+.exercise__answer div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15em;
+}
+
+.exercise__answer dt,
+.exercise__answer span:first-child {
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.88em;
+}
+
+.exercise__answer b {
+  font-size: var(--step-0);
+  font-weight: 500;
+}
+
+/* --- Decision guide ----------------------------------------------------- */
+
+.guide {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(17rem, 100%), 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.guide__item {
+  padding: var(--space-4);
+  border: 1px solid var(--hairline);
+  border-left-width: 3px;
+  background: var(--paper-raised);
+}
+
+.guide__when {
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  margin-bottom: var(--space-2);
+}
+
+.guide__pick {
+  font-family: var(--font-display);
+  font-size: var(--step-1);
+  font-weight: 700;
+  margin-bottom: var(--space-2);
+}
+
+.guide__why {
+  margin: 0;
+  font-size: var(--step--1);
+  max-width: none;
+}
+
+/* --- Criteria list ------------------------------------------------------ */
+
+.criteria {
+  counter-reset: criterion;
+  margin: 0 0 var(--space-6);
+  padding: 0;
+  list-style: none;
+  max-width: none;
+}
+
+.criteria > li {
+  position: relative;
+  margin: 0 0 var(--space-5);
+  padding-left: 3.25rem;
+  border-bottom: 1px solid var(--hairline);
+  padding-bottom: var(--space-4);
+}
+
+.criteria > li:last-child {
+  border-bottom: 0;
+}
+
+.criteria > li::before {
+  counter-increment: criterion;
+  content: 'C' counter(criterion);
+  position: absolute;
+  left: 0;
+  top: 0.1em;
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  font-weight: 500;
+  color: var(--accent);
+  letter-spacing: 0.06em;
+}
+
+.criteria h3 {
+  margin-bottom: var(--space-2);
+}
+
+.criteria p {
+  margin-bottom: 0;
+  max-width: 74ch;
+}
+
+/* --- Sources ----------------------------------------------------------- */
+
+.sources {
+  margin: 0 0 var(--space-6);
+  padding: 0;
+  list-style: none;
+  max-width: none;
+}
+
+.sources > li {
+  margin: 0 0 var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid var(--hairline);
+  border-left-width: 3px;
+  background: var(--paper-raised);
+}
+
+.sources__kind {
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.sources__title {
+  font-family: var(--font-display);
+  font-size: var(--step-1);
+  font-weight: 700;
+  margin: var(--space-1) 0;
+  max-width: 48ch;
+}
+
+.sources__meta {
+  margin: 0;
+  font-size: var(--step--1);
+  color: var(--muted);
+  max-width: none;
+}
+
+.sources__meta a {
+  font-family: var(--font-mono);
+}
+
+.sources > li.is-chair { border-left-color: var(--accent); }
+.sources > li.is-group { border-left-color: var(--m-mejorado); }
+
+/* --- Roster ------------------------------------------------------------ */
+
+.roster {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+  margin: 0 0 var(--space-5);
+  padding: 0;
+  list-style: none;
+  max-width: none;
+}
+
+.roster li {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--step-0);
+  font-weight: 500;
+}
+
+.roster li::before {
+  content: '\2022';
+  color: var(--accent);
+  margin-right: 0.5em;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  margin: 0 0 var(--space-5);
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  color: var(--muted);
+  max-width: none;
+}
+
+.meta li {
+  margin: 0;
+}
+
+/* --- Thesis opener ---------------------------------------------------- */
+
+.thesis {
+  margin-bottom: var(--space-7);
+}
+
+.thesis__claim {
+  font-family: var(--font-display);
+  font-size: var(--step-3);
+  font-weight: 700;
+  line-height: 1.16;
+  letter-spacing: -0.015em;
+  max-width: 38ch;
+  margin: 0 0 var(--space-4);
+}
+
+.thesis__claim em {
+  font-style: normal;
+  color: var(--accent);
+}
+
+.thesis__answer {
+  max-width: 54ch;
+  font-size: var(--step-1);
+}
+
+/* --- Conclusion statements -------------------------------------------- */
+
+.findings {
+  margin: 0 0 var(--space-6);
+  padding: 0;
+  list-style: none;
+  max-width: none;
+  counter-reset: finding;
+}
+
+.findings > li {
+  position: relative;
+  margin: 0 0 var(--space-4);
+  padding: var(--space-4) var(--space-4) var(--space-4) var(--space-6);
+  border: 1px solid var(--hairline);
+  background: var(--paper-raised);
+}
+
+.findings > li::before {
+  counter-increment: finding;
+  content: counter(finding);
+  position: absolute;
+  left: var(--space-4);
+  top: var(--space-4);
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  font-weight: 500;
+  color: var(--accent);
+}
+
+.findings h3 {
+  margin-bottom: var(--space-2);
+}
+
+.findings p {
+  margin: 0;
+  max-width: none;
+}
+
+/* Two columns on a wide screen: a full-width box holding a 68ch paragraph
+   leaves half the card empty. */
+@media (min-width: 64rem) {
+  .findings {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-4);
+  }
+
+  .findings > li {
+    margin: 0;
+  }
+}
+
+/* --- Responsive --------------------------------------------------------- */
+
+@media (max-width: 48rem) {
+  .stage {
+    padding: var(--space-5) var(--space-4) var(--space-7);
+  }
+
+  .masthead {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .rail__track {
+    padding-left: var(--space-4);
+    padding-right: var(--space-4);
+  }
+
+  .rail__track::before {
+    left: var(--space-4);
+    right: var(--space-4);
+  }
+
+  .chapter__title {
+    font-size: var(--step-3);
+  }
+
+  .thesis__claim {
+    font-size: var(--step-2);
+  }
+
+  .controls {
+    padding: var(--space-3);
+    gap: var(--space-3);
+  }
+}
+
+@media (max-width: 26rem) {
+  .masthead__controls {
+    width: 100%;
+  }
+
+  .exercise__assigned {
+    text-align: left;
+  }
+}
+
+@media print {
+  .rail,
+  .masthead__controls,
+  .stepper,
+  .audience__options {
+    display: none;
+  }
+
+  .chapter[hidden] {
+    display: block;
+  }
+}

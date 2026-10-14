@@ -1,0 +1,213 @@
+/* ==========================================================================
+   Design tokens.
+
+   Subject world: the direction field and the march along the x axis.
+   Integration as walking a slope field, so the page is built out of an axis,
+   ticks and hairlines rather than cards and shadows.
+   ========================================================================== */
+
+/* --- Vendored faces. No CDN at runtime: the site must open from file://. --- */
+
+@font-face {
+  font-family: 'Chivo';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../assets/fonts/chivo-700.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Chivo';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url('../assets/fonts/chivo-900.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/source-serif-4-400.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('../assets/fonts/source-serif-4-600.woff2') format('woff2');
+}
+
+/* Greek subset so delta, sigma and phi render in the body face. */
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  unicode-range: U+0370-03FF, U+1F00-1FFF;
+  src: url('../assets/fonts/source-serif-4-greek-400.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Azeret Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/azeret-mono-400.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Azeret Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('../assets/fonts/azeret-mono-500.woff2') format('woff2');
+}
+
+/* --- Light theme (default) ------------------------------------------------ */
+
+:root {
+  --font-display: 'Chivo', 'Helvetica Neue', Arial, sans-serif;
+  --font-body: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+  --font-mono: 'Azeret Mono', 'SF Mono', Consolas, 'Liberation Mono', monospace;
+
+  /* Projector mode multiplies every type step at once. */
+  --scale: 1;
+  --step--1: calc(0.8125rem * var(--scale));
+  --step-0: calc(1rem * var(--scale));
+  --step-1: calc(1.1875rem * var(--scale));
+  --step-2: calc(1.4375rem * var(--scale));
+  --step-3: calc(1.8125rem * var(--scale));
+  --step-4: calc(2.375rem * var(--scale));
+  --step-5: calc(3.25rem * var(--scale));
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4.5rem;
+
+  --measure: 68ch;
+  --rail-height: 4.25rem;
+
+  --paper: #f7f5f2;
+  --paper-raised: #fcfbf9;
+  --paper-sunken: #efece7;
+  --ink: #141a22;
+  --muted: #5a6472;
+  --hairline: #d8d4ce;
+  --hairline-strong: #bdb7ae;
+
+  --accent: #d81e5b;
+  --accent-contrast: #ffffff;
+  --accent-wash: rgba(216, 30, 91, 0.1);
+
+  /* Method identity. Stepped in lightness per theme so the blue/violet pair
+     stays separable; dash patterns and markers carry identity as well. */
+  --m-euler: #2a53be;
+  --m-taylor: #9a6bea;
+  --m-mejorado: #0e7c5a;
+  --m-rk2: #c2520b;
+  --m-exact: var(--ink);
+
+  --m-euler-wash: rgba(42, 83, 190, 0.12);
+  --m-taylor-wash: rgba(154, 107, 234, 0.14);
+  --m-mejorado-wash: rgba(14, 124, 90, 0.12);
+  --m-rk2-wash: rgba(194, 82, 11, 0.12);
+
+  --field-tick: #c5bfb6;
+  --grid: #e4e0d9;
+
+  --focus-ring: var(--accent);
+  --shadow-plate: none;
+
+  color-scheme: light;
+}
+
+/* --- Dark theme ---------------------------------------------------------- */
+
+:root[data-theme="dark"] {
+  --paper: #101319;
+  --paper-raised: #161a21;
+  --paper-sunken: #0b0e13;
+  --ink: #edeff2;
+  --muted: #99a3b2;
+  --hairline: #262c36;
+  --hairline-strong: #3a424f;
+
+  --accent: #f2457a;
+  --accent-contrast: #16060d;
+  --accent-wash: rgba(242, 69, 122, 0.16);
+
+  --m-euler: #3568dc;
+  --m-taylor: #b06bf0;
+  --m-mejorado: #149066;
+  --m-rk2: #d4661c;
+
+  --m-euler-wash: rgba(53, 104, 220, 0.2);
+  --m-taylor-wash: rgba(176, 107, 240, 0.2);
+  --m-mejorado-wash: rgba(20, 144, 102, 0.2);
+  --m-rk2-wash: rgba(212, 102, 28, 0.2);
+
+  --field-tick: #39414d;
+  --grid: #1e242d;
+
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #101319;
+    --paper-raised: #161a21;
+    --paper-sunken: #0b0e13;
+    --ink: #edeff2;
+    --muted: #99a3b2;
+    --hairline: #262c36;
+    --hairline-strong: #3a424f;
+
+    --accent: #f2457a;
+    --accent-contrast: #16060d;
+    --accent-wash: rgba(242, 69, 122, 0.16);
+
+    --m-euler: #3568dc;
+    --m-taylor: #b06bf0;
+    --m-mejorado: #149066;
+    --m-rk2: #d4661c;
+
+    --m-euler-wash: rgba(53, 104, 220, 0.2);
+    --m-taylor-wash: rgba(176, 107, 240, 0.2);
+    --m-mejorado-wash: rgba(20, 144, 102, 0.2);
+    --m-rk2-wash: rgba(212, 102, 28, 0.2);
+
+    --field-tick: #39414d;
+    --grid: #1e242d;
+
+    color-scheme: dark;
+  }
+}
+
+/* --- Projector mode ------------------------------------------------------ */
+
+:root[data-projector="on"] {
+  --scale: 1.3;
+  --measure: 56ch;
+  --hairline: var(--hairline-strong);
+}
+
+/* --- Motion ------------------------------------------------------------- */
+
+:root {
+  --motion-step: 180ms;
+  --ease: cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-step: 1ms;
+  }
+}
