@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pizarrón Visual EDO — Taylor 2, Heun y RK2 | UTN FRLP Grupo 10</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --exact: #38bdf8;
+      --taylor: #f59e0b;
+      --heun: #10b981;
+      --rk2: #a855f7;
+      --grid: #334155;
+      --axis: #64748b;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1000px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 14px;
+    }
+
+    h1 { font-size: 1.5rem; font-weight: 700; color: #fff; }
+    .subtitle { font-size: 0.9rem; color: var(--text-muted); }
+
+    /* Tabs */
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .tab-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      padding: 12px 14px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.92rem;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn:hover { background: #283548; color: #fff; }
+    .tab-btn.active[data-method="taylor"] { border-color: var(--taylor); background: rgba(245, 158, 11, 0.12); color: #fbbf24; }
+    .tab-btn.active[data-method="heun"] { border-color: var(--heun); background: rgba(16, 185, 129, 0.12); color: #34d399; }
+    .tab-btn.active[data-method="rk2"] { border-color: var(--rk2); background: rgba(168, 85, 247, 0.12); color: #c084fc; }
+    .tab-btn.active[data-method="all"] { border-color: var(--exact); background: rgba(56, 189, 248, 0.12); color: #38bdf8; }
+
+    .tab-btn .badge {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    /* Main Grid */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 850px) {
+      .main-grid { grid-template-columns: 1fr; }
+      .tabs { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* Chart Area */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .svg-wrapper {
+      width: 100%;
+      height: 380px;
+      background: #090d16;
+      border-radius: 8px;
+      border: 1px solid #1e293b;
+      position: relative;
+    }
+
+    svg { width: 100%; height: 100%; overflow: visible; }
+
+    /* Legend */
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      font-size: 0.82rem;
+      border-top: 1px solid var(--card-border);
+      padding-top: 10px;
+    }
+
+    .legend-item { display: flex; align-items: center; gap: 6px; }
+    .legend-color { width: 12px; height: 12px; border-radius: 3px; }
+
+    /* Step Slider & Controls */
+    .step-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #090d16;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--card-border);
+    }
+
+    .step-controls input[type="range"] {
+      flex: 1;
+      accent-color: var(--exact);
+      cursor: pointer;
+    }
+
+    .btn-step {
+      background: #334155;
+      color: #fff;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-step:hover { background: #475569; }
+
+    /* Explanation Panel */
+    .panel-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .formula-box {
+      background: #090d16;
+      border-left: 4px solid var(--exact);
+      padding: 12px;
+      border-radius: 0 8px 8px 0;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.88rem;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .formula-box.taylor { border-left-color: var(--taylor); }
+    .formula-box.heun { border-left-color: var(--heun); }
+    .formula-box.rk2 { border-left-color: var(--rk2); }
+
+    .steps-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      font-size: 0.9rem;
+    }
+
+    .step-item {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 10px;
+      border-radius: 6px;
+    }
+
+    .step-num {
+      background: #334155;
+      color: #f8fafc;
+      font-weight: 700;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      flex-shrink: 0;
+    }
+
+    .exam-tip {
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px dashed #f59e0b;
+      color: #fde68a;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+    }
+
+    .exam-tip strong { color: #f59e0b; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <div>
+        <h1>Pizarrón Visual de EDO — Orden Cuadrático O(h²)</h1>
+        <div class="subtitle">Ecuación benchmark de cátedra: y' = 2xy, y(1) = 1, paso h = 0.1 → y(1.1)</div>
+      </div>
+      <div style="font-size: 0.8rem; text-align: right; color: var(--text-muted);">
+        UTN FRLP · Análisis Numérico<br>
+        <strong>Grupo 10</strong>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" data-method="taylor">
+        <span class="badge">Analítico</span>
+        <span>Taylor Grado 2</span>
+      </button>
+      <button class="tab-btn" data-method="heun">
+        <span class="badge">Predictor-Corrector</span>
+        <span>Euler Mejorado (Heun)</span>
+      </button>
+      <button class="tab-btn" data-method="rk2">
+        <span class="badge">Punto Medio</span>
+        <span>Runge-Kutta 2</span>
+      </button>
+      <button class="tab-btn" data-method="all">
+        <span class="badge">Comparativa</span>
+        <span>Los 3 Métodos Juntos</span>
+      </button>
+    </div>
+
+    <!-- Main Workspace -->
+    <div class="main-grid">
+      <!-- Left: Chart & Interactive Visual -->
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">PLANO CARTESIANO X-Y (Paso h = 0.1)</span>
+          <span id="coord-readout" style="font-family: monospace; font-size: 0.85rem; color: var(--exact);">x = 1.000 → y = 1.0000</span>
+        </div>
+
+        <div class="svg-wrapper">
+          <svg id="chart" viewBox="0 0 540 380">
+            <!-- Grid Lines -->
+            <defs>
+              <pattern id="grid" width="45" height="35" patternUnits="userSpaceOnUse">
+                <path d="M 45 0 L 0 0 0 35" fill="none" stroke="#1e293b" stroke-width="1"/>
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#grid)" />
+
+            <!-- Dynamic content injected by JS -->
+            <g id="axes-layer"></g>
+            <g id="curve-layer"></g>
+            <g id="method-layer"></g>
+            <g id="points-layer"></g>
+          </svg>
+        </div>
+
+        <!-- Animation / Slider -->
+        <div class="step-controls">
+          <button id="btn-play" class="btn-step">▶ Animar Paso</button>
+          <span style="font-size: 0.8rem; color: var(--text-muted);">Avance del paso h:</span>
+          <input type="range" id="step-slider" min="0" max="1" step="0.01" value="1">
+          <span id="slider-val" style="font-family: monospace; font-size: 0.85rem; width: 45px;">100%</span>
+        </div>
+
+        <!-- Legend -->
+        <div class="legend" id="legend"></div>
+      </div>
+
+      <!-- Right: Pure Conceptual Explanation -->
+      <div class="card" id="explanation-panel">
+        <!-- Injected by JS -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Problem parameters: y' = 2xy, y(1) = 1, h = 0.1
+    // Exact: y(x) = exp(x^2 - 1)
+    const x0 = 1.0, y0 = 1.0, h = 0.1, x1 = 1.1;
+    const yExact1 = Math.exp(1.1*1.1 - 1); // 1.233678
+
+    // Screen Mapping (SVG 540 x 380)
+    // Domain: X in [0.98, 1.12], Y in [0.98, 1.26]
+    const xMin = 0.98, xMax = 1.12;
+    const yMin = 0.98, yMax = 1.26;
+    const padX = 50, padY = 30, chartW = 460, chartH = 320;
+
+    function toScreenX(x) { return padX + ((x - xMin) / (xMax - xMin)) * chartW; }
+    function toScreenY(y) { return (padY + chartH) - ((y - yMin) / (yMax - yMin)) * chartH; }
+
+    const svgAxes = document.getElementById("axes-layer");
+    const svgCurve = document.getElementById("curve-layer");
+    const svgMethod = document.getElementById("method-layer");
+    const svgPoints = document.getElementById("points-layer");
+    const panel = document.getElementById("explanation-panel");
+    const legend = document.getElementById("legend");
+    const slider = document.getElementById("step-slider");
+    const sliderVal = document.getElementById("slider-val");
+    const coordReadout = document.getElementById("coord-readout");
+    const btnPlay = document.getElementById("btn-play");
+
+    let activeMethod = "taylor";
+    let progress = 1.0;
+    let animId = null;
+
+    // Draw Static Axes & Exact Curve
+    function drawBase() {
+      svgAxes.innerHTML = `
+        <!-- X Axis -->
+        <line x1="${toScreenX(0.98)}" y1="${toScreenY(1.0)}" x2="${toScreenX(1.12)}" y2="${toScreenY(1.0)}" stroke="#475569" stroke-width="1.5" />
+        <!-- Vertical Step Markers -->
+        <line x1="${toScreenX(1.0)}" y1="${toScreenY(yMin)}" x2="${toScreenX(1.0)}" y2="${toScreenY(yMax)}" stroke="#334155" stroke-dasharray="3,3" />
+        <line x1="${toScreenX(1.05)}" y1="${toScreenY(yMin)}" x2="${toScreenX(1.05)}" y2="${toScreenY(yMax)}" stroke="#334155" stroke-dasharray="3,3" />
+        <line x1="${toScreenX(1.1)}" y1="${toScreenY(yMin)}" x2="${toScreenX(1.1)}" y2="${toScreenY(yMax)}" stroke="#334155" stroke-dasharray="3,3" />
+
+        <text x="${toScreenX(1.0)}" y="${toScreenY(yMin) + 18}" fill="#94a3b8" font-size="11" text-anchor="middle">x₀ = 1.0</text>
+        <text x="${toScreenX(1.05)}" y="${toScreenY(yMin) + 18}" fill="#94a3b8" font-size="11" text-anchor="middle">xm = 1.05</text>
+        <text x="${toScreenX(1.1)}" y="${toScreenY(yMin) + 18}" fill="#94a3b8" font-size="11" text-anchor="middle">x₁ = 1.1</text>
+      `;
+
+      // Exact Solution Curve
+      let dCurve = "";
+      for (let x = 0.99; x <= 1.115; x += 0.002) {
+        const y = Math.exp(x*x - 1);
+        const sx = toScreenX(x);
+        const sy = toScreenY(y);
+        dCurve += (dCurve === "" ? `M ${sx} ${sy}` : ` L ${sx} ${sy}`);
+      }
+      svgCurve.innerHTML = `
+        <path d="${dCurve}" fill="none" stroke="var(--exact)" stroke-width="2.5" opacity="0.85" />
+      `;
+    }
+
+    // Explanations Dictionary
+    const content = {
+      taylor: {
+        title: "Taylor (Grado 2) — El Analítico Puro",
+        badge: "Analítico",
+        color: "var(--taylor)",
+        formula: `y₁ = y₀ + h · y'₀ + (h² / 2) · y''₀
+y'₀  = 2 · (1) · (1) = 2.0000
+y''  = ∂f/∂x + (∂f/∂y) · y' = 2y + 4x²y
+y''₀ = 2(1) + 4(1)²(1) = 6.0000
+y₁   = 1 + 0.1(2) + 0.005(6) = 1.2300`,
+        steps: [
+          { n: "1", t: "Pendiente inicial:", d: "Calcula y'₀ = f(1, 1) = 2. Esta es la recta tangente clásica de Euler." },
+          { n: "2", t: "Derivada analítica (Regla de la Cadena):", d: "Deriva y' = 2xy respecto a x recordando que y es función de x: y'' = 2y + 2x·y' = 2y + 4x²y. En (1,1) da 6." },
+          { n: "3", t: "Curvatura parabólica:", d: "Suma el término cuadrático (h²/2)·6 = 0.03. La aproximación no es una recta, sino la parábola osculadora." }
+        ],
+        tip: "PREGUNTA DE FINAL: ¿Por qué no se usa siempre Taylor si es tan exacto? Porque si f(x,y) es un monstruo o viene de datos medidos por sensores, derivar analíticamente y'' o y''' es matemáticamente inviable o imposible."
+      },
+      heun: {
+        title: "Euler Mejorado (Heun) — Predictor-Corrector",
+        badge: "Predictor-Corrector",
+        color: "var(--heun)",
+        formula: `[Predictor Euler]:
+ỹ₁ = y₀ + h · f(x₀, y₀) = 1 + 0.1(2) = 1.2000
+[Pendiente en el extremo]:
+k₂ = f(1.1, 1.2000) = 2 · (1.1) · (1.2) = 2.6400
+[Corrector - Promedio de pendientes]:
+y₁ = y₀ + (h / 2) · [k₁ + k₂]
+y₁ = 1 + 0.05 · [2.0000 + 2.6400] = 1.2320`,
+        steps: [
+          { n: "1", t: "Tiro de prueba (Predictor):", d: "Avanza con Euler simple hasta x₁ para predecir dónde caería la solución (ỹ₁ = 1.20)." },
+          { n: "2", t: "Muestreo de pendiente final:", d: "Evalúa la EDO en ese punto predictor: k₂ = f(1.1, 1.20) = 2.6400." },
+          { n: "3", t: "Corrección por Trapecios:", d: "Promedia la pendiente de arranque (2.0) con la del final (2.64), dando k_prom = 2.32. Con esa pendiente promedio avanza el paso completo." }
+        ],
+        tip: "GEOMETRÍA CLAVE: Equivale exactamente a integrar y' con la Regla del Trapecio: Área ≈ (h/2)·[f(a) + f(b)]."
+      },
+      rk2: {
+        title: "Runge-Kutta 2 — Regla del Punto Medio",
+        badge: "Muestreo Central",
+        color: "var(--rk2)",
+        formula: `[Paso intermedio al medio]:
+k₁ = f(x₀, y₀) = 2.0000
+xm = x₀ + h/2 = 1.05
+ym = y₀ + (h/2) · k₁ = 1 + 0.05(2) = 1.1000
+[Pendiente central k₂]:
+k₂ = f(1.05, 1.1000) = 2 · (1.05) · (1.10) = 2.3100
+[Salto completo]:
+y₁ = y₀ + h · k₂ = 1 + 0.1(2.3100) = 1.2310`,
+        steps: [
+          { n: "1", t: "Medio paso de exploración:", d: "Usa la pendiente inicial k₁ para caminar solo hasta la mitad del intervalo: xm = 1.05, ym = 1.10." },
+          { n: "2", t: "Mide la pendiente en el centro:", d: "Evalúa f(1.05, 1.10) = 2.3100. Esta pendiente central representa mucho mejor la inclinación global del tramo." },
+          { n: "3", t: "Salto completo:", d: "Vuelve a pararse en el inicio (x₀, y₀) y avanza todo el paso h = 0.1 usando directamente la pendiente central k₂." }
+        ],
+        tip: "GEOMETRÍA CLAVE: Equivale a integrar y' con la Regla del Punto Medio: Área ≈ h · f(punto medio)."
+      },
+      all: {
+        title: "Comparativa Directa de los 3 Métodos",
+        badge: "Ronda 3 - UTN FRLP",
+        color: "var(--exact)",
+        formula: `Solución Exacta: y(1.1) = e^0.21 = 1.23368
+Euler Mejorado:   y₁ = 1.23200  (Error = 0.00168)
+RK2 Punto Medio:  y₁ = 1.23100  (Error = 0.00268)
+Taylor Grado 2:   y₁ = 1.23000  (Error = 0.00368)`,
+        steps: [
+          { n: "★", t: "¿Por qué los 3 dan distinto?", d: "Los 3 tienen orden O(h²), pero difieren en la constante del error local C · h³. En curvas convexas como e^(x²-1), el promedio de extremos (Heun) reacciona más rápido a la aceleración que el centro (RK2)." },
+          { n: "★", t: "Costo Computacional:", d: "Taylor hace 1 sola evaluación pero requiere derivar analíticamente. Heun y RK2 hacen exactamente 2 evaluaciones de f(x,y) por paso sin derivar nada." },
+          { n: "★", t: "Conclusión de Cátedra:", d: "RK2 y Heun son métodos de paso simple 'tipo Runge-Kutta' de orden 2. Eliminan la necesidad de cálculo simbólico manteniendo la misma tasa de convergencia cuadrática." }
+        ],
+        tip: "TRUCO DE DEFENSA: Si la EDO fuera lineal y' = a·x + b, ¡LOS TRES MÉTODOS DAN EXACTAMENTE LO MISMO! Solo se diferencian cuando la EDO tiene curvatura no lineal."
+      }
+    };
+
+    function renderMethod() {
+      const p = progress;
+      const curX = x0 + p * h;
+      let dMethod = "";
+      let dExtra = "";
+      let pts = "";
+
+      const sX0 = toScreenX(x0), sY0 = toScreenY(y0);
+      pts += `<circle cx="${sX0}" cy="${sY0}" r="4.5" fill="#fff" />`;
+
+      if (activeMethod === "taylor") {
+        // Taylor parabola: y(x) = 1 + 2*(x-1) + 3*(x-1)^2
+        let path = "";
+        for (let t = 0; t <= p; t += 0.02) {
+          const x = x0 + t * h;
+          const y = 1 + 2*(x - 1) + 3*(x - 1)*(x - 1);
+          const sx = toScreenX(x), sy = toScreenY(y);
+          path += (path === "" ? `M ${sx} ${sy}` : ` L ${sx} ${sy}`);
+        }
+        const yFinal = 1 + 2*(curX - 1) + 3*(curX - 1)*(curX - 1);
+        dMethod = `<path d="${path}" fill="none" stroke="var(--taylor)" stroke-width="3" />`;
+        pts += `<circle cx="${toScreenX(curX)}" cy="${toScreenY(yFinal)}" r="5" fill="var(--taylor)" />`;
+        coordReadout.textContent = `Taylor: x = ${curX.toFixed(3)} → y = ${yFinal.toFixed(4)}`;
+
+      } else if (activeMethod === "heun") {
+        // Predictor line to (1.1, 1.20)
+        const predX = x0 + p * h;
+        const predY = y0 + (curX - x0) * 2.0; // slope 2.0
+        dExtra += `<line x1="${sX0}" y1="${sY0}" x2="${toScreenX(predX)}" y2="${toScreenY(predY)}" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4,4" />`;
+        pts += `<circle cx="${toScreenX(predX)}" cy="${toScreenY(predY)}" r="3.5" fill="#94a3b8" />`;
+
+        // Corrector line with slope 2.32
+        const corrY = y0 + (curX - x0) * 2.32;
+        dMethod = `<line x1="${sX0}" y1="${sY0}" x2="${toScreenX(curX)}" y2="${toScreenY(corrY)}" stroke="var(--heun)" stroke-width="3" />`;
+        pts += `<circle cx="${toScreenX(curX)}" cy="${toScreenY(corrY)}" r="5" fill="var(--heun)" />`;
+        coordReadout.textContent = `Heun: x = ${curX.toFixed(3)} → y = ${corrY.toFixed(4)}`;
+
+      } else if (activeMethod === "rk2") {
+        // Midpoint: (1.05, 1.10)
+        const midX = 1.05, midY = 1.10;
+        dExtra += `<line x1="${sX0}" y1="${sY0}" x2="${toScreenX(midX)}" y2="${toScreenY(midY)}" stroke="#64748b" stroke-width="1.5" stroke-dasharray="3,3" />`;
+        pts += `<circle cx="${toScreenX(midX)}" cy="${toScreenY(midY)}" r="4" fill="#c084fc" />`;
+
+        // Tangent from (1,1) with slope 2.31
+        const rkY = y0 + (curX - x0) * 2.31;
+        dMethod = `<line x1="${sX0}" y1="${sY0}" x2="${toScreenX(curX)}" y2="${toScreenY(rkY)}" stroke="var(--rk2)" stroke-width="3" />`;
+        pts += `<circle cx="${toScreenX(curX)}" cy="${toScreenY(rkY)}" r="5" fill="var(--rk2)" />`;
+        coordReadout.textContent = `RK2: x = ${curX.toFixed(3)} → y = ${rkY.toFixed(4)}`;
+
+      } else if (activeMethod === "all") {
+        // Draw all 3 simultaneously at full step
+        const yT = 1 + 2*(curX - 1) + 3*(curX - 1)*(curX - 1);
+        const yH = y0 + (curX - x0) * 2.32;
+        const yR = y0 + (curX - x0) * 2.31;
+        const yEx = Math.exp(curX*curX - 1);
+
+        dMethod = `
+          <!-- Taylor -->
+          <line x1="${sX0}" y1="${sY0}" x2="${toScreenX(curX)}" y2="${toScreenY(yT)}" stroke="var(--taylor)" stroke-width="2" />
+          <!-- Heun -->
+          <line x1="${sX0}" y1="${sY0}" x2="${toScreenX(curX)}" y2="${toScreenY(yH)}" stroke="var(--heun)" stroke-width="2.5" />
+          <!-- RK2 -->
+          <line x1="${sX0}" y1="${sY0}" x2="${toScreenX(curX)}" y2="${toScreenY(yR)}" stroke="var(--rk2)" stroke-width="2" stroke-dasharray="4,2" />
+        `;
+        pts += `
+          <circle cx="${toScreenX(curX)}" cy="${toScreenY(yT)}" r="4" fill="var(--taylor)" />
+          <circle cx="${toScreenX(curX)}" cy="${toScreenY(yH)}" r="4" fill="var(--heun)" />
+          <circle cx="${toScreenX(curX)}" cy="${toScreenY(yR)}" r="4" fill="var(--rk2)" />
+          <circle cx="${toScreenX(curX)}" cy="${toScreenY(yEx)}" r="4.5" fill="var(--exact)" />
+        `;
+        coordReadout.textContent = `Exacta: ${yEx.toFixed(4)} | Heun: ${yH.toFixed(4)} | RK2: ${yR.toFixed(4)} | Taylor: ${yT.toFixed(4)}`;
+      }
+
+      svgMethod.innerHTML = dExtra + dMethod;
+      svgPoints.innerHTML = pts;
+    }
+
+    function renderExplanation() {
+      const m = content[activeMethod];
+      panel.innerHTML = `
+        <div class="panel-title" style="color: ${m.color};">
+          <span>${m.title}</span>
+        </div>
+        <div class="formula-box ${activeMethod}">
+          <pre style="white-space: pre-wrap; margin:0;">${m.formula}</pre>
+        </div>
+        <div class="steps-list">
+          ${m.steps.map(s => `
+            <div class="step-item">
+              <span class="step-num">${s.n}</span>
+              <div>
+                <strong>${s.t}</strong>
+                <p style="color: var(--text-muted); font-size: 0.85rem; margin-top:2px;">${s.d}</p>
+              </div>
+            </div>
+          `).join("")}
+        </div>
+        <div class="exam-tip">
+          <strong>TIP DE EXAMEN ORAL:</strong> ${m.tip}
+        </div>
+      `;
+
+      // Update Legend
+      if (activeMethod === "taylor") {
+        legend.innerHTML = `
+          <div class="legend-item"><div class="legend-color" style="background: var(--exact)"></div>Solución Exacta y(x) = e^(x²-1)</div>
+          <div class="legend-item"><div class="legend-color" style="background: var(--taylor)"></div>Parábola Taylor Grado 2 (y'' = 6)</div>
+        `;
+      } else if (activeMethod === "heun") {
+        legend.innerHTML = `
+          <div class="legend-item"><div class="legend-color" style="background: var(--exact)"></div>Solución Exacta</div>
+          <div class="legend-item"><div class="legend-color" style="background: #64748b"></div>Predictor Euler (k₁ = 2.0)</div>
+          <div class="legend-item"><div class="legend-color" style="background: var(--heun)"></div>Corrector Heun (k_prom = 2.32)</div>
+        `;
+      } else if (activeMethod === "rk2") {
+        legend.innerHTML = `
+          <div class="legend-item"><div class="legend-color" style="background: var(--exact)"></div>Solución Exacta</div>
+          <div class="legend-item"><div class="legend-color" style="background: #c084fc"></div>Punto Medio (xm=1.05, ym=1.10)</div>
+          <div class="legend-item"><div class="legend-color" style="background: var(--rk2)"></div>Paso RK2 con pendiente central k₂ = 2.31</div>
+        `;
+      } else {
+        legend.innerHTML = `
+          <div class="legend-item"><div class="legend-color" style="background: var(--exact)"></div>Exacta: 1.23368</div>
+          <div class="legend-item"><div class="legend-color" style="background: var(--heun)"></div>Heun: 1.23200 (Mejor)</div>
+          <div class="legend-item"><div class="legend-color" style="background: var(--rk2)"></div>RK2: 1.23100</div>
+          <div class="legend-item"><div class="legend-color" style="background: var(--taylor)"></div>Taylor 2: 1.23000</div>
+        `;
+      }
+    }
+
+    // Tabs Event
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        activeMethod = btn.dataset.method;
+        renderExplanation();
+        renderMethod();
+      });
+    });
+
+    // Slider Event
+    slider.addEventListener("input", (e) => {
+      progress = parseFloat(e.target.value);
+      sliderVal.textContent = Math.round(progress * 100) + "%";
+      renderMethod();
+    });
+
+    // Play / Animation
+    btnPlay.addEventListener("click", () => {
+      if (animId) cancelAnimationFrame(animId);
+      progress = 0;
+      slider.value = 0;
+      let start = null;
+      function animate(time) {
+        if (!start) start = time;
+        const elapsed = (time - start) / 1200; // 1.2 sec
+        progress = Math.min(1.0, elapsed);
+        slider.value = progress;
+        sliderVal.textContent = Math.round(progress * 100) + "%";
+        renderMethod();
+        if (progress < 1.0) animId = requestAnimationFrame(animate);
+      }
+      animId = requestAnimationFrame(animate);
+    });
+
+    // Initialize
+    drawBase();
+    renderExplanation();
+    renderMethod();
+  </script>
+</body>
+</html>
